@@ -1,0 +1,227 @@
+// Prisma schema - Prisma ORM v7
+// NOTE: In Prisma v7 the datasource url is configured in prisma.config.ts
+// See: https://pris.ly/d/config-datasource
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ============================================================
+// USER - Administrator account
+// ============================================================
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  email     String   @unique @db.VarChar(255)
+  password  String   @db.VarChar(255)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// ============================================================
+// PROFILE - Main portfolio owner information
+// ============================================================
+model Profile {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  headline     String   @db.VarChar(500)
+  bio          String   @db.Text
+  profileImage String?  @map("profile_image") @db.VarChar(500)
+  location     String?  @db.VarChar(255)
+  email        String   @db.VarChar(255)
+  phone        String?  @db.VarChar(50)
+  resumeUrl    String?  @map("resume_url") @db.VarChar(500)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("profiles")
+}
+
+// ============================================================
+// EDUCATION - Educational history
+// ============================================================
+model Education {
+  id           Int       @id @default(autoincrement())
+  institution  String    @db.VarChar(255)
+  degree       String    @db.VarChar(255)
+  fieldOfStudy String    @map("field_of_study") @db.VarChar(255)
+  startDate    DateTime  @map("start_date") @db.Date
+  endDate      DateTime? @map("end_date") @db.Date
+  isCurrent    Boolean   @default(false) @map("is_current")
+  gpa          Decimal?  @db.Decimal(3, 2)
+  description  String?   @db.Text
+  logoUrl      String?   @map("logo_url") @db.VarChar(500)
+  order        Int       @default(0)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("educations")
+}
+
+// ============================================================
+// CAREER - Work / internship / freelance experience
+// ============================================================
+model Career {
+  id          Int        @id @default(autoincrement())
+  company     String     @db.VarChar(255)
+  position    String     @db.VarChar(255)
+  type        CareerType @default(FULLTIME)
+  startDate   DateTime   @map("start_date") @db.Date
+  endDate     DateTime?  @map("end_date") @db.Date
+  isCurrent   Boolean    @default(false) @map("is_current")
+  location    String?    @db.VarChar(255)
+  description String?    @db.Text
+  logoUrl     String?    @map("logo_url") @db.VarChar(500)
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  @@map("careers")
+}
+
+enum CareerType {
+  FULLTIME
+  PARTTIME
+  INTERNSHIP
+  FREELANCE
+  CONTRACT
+  VOLUNTEER
+}
+
+// ============================================================
+// SKILL CATEGORY - e.g. Programming Language, Framework, etc.
+// ============================================================
+model SkillCategory {
+  id          Int      @id @default(autoincrement())
+  name        String   @db.VarChar(100)
+  description String?  @db.VarChar(500)
+  icon        String?  @db.VarChar(100)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  skills      Skill[]
+
+  @@map("skill_categories")
+}
+
+// ============================================================
+// SKILL - Individual skill
+// ============================================================
+model Skill {
+  id              Int           @id @default(autoincrement())
+  name            String        @db.VarChar(100)
+  proficiency     Int           @default(0)
+  icon            String?       @db.VarChar(100)
+  order           Int           @default(0)
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  skillCategoryId Int           @map("skill_category_id")
+  skillCategory   SkillCategory @relation(fields: [skillCategoryId], references: [id], onDelete: Cascade)
+
+  @@map("skills")
+}
+
+// ============================================================
+// PROJECT - Portfolio project
+// ============================================================
+model Project {
+  id          Int           @id @default(autoincrement())
+  title       String        @db.VarChar(255)
+  slug        String        @unique @db.VarChar(255)
+  description String        @db.Text
+  content     String?       @db.LongText
+  coverImage  String?       @map("cover_image") @db.VarChar(500)
+  techStack   String        @map("tech_stack") @db.Text
+  liveUrl     String?       @map("live_url") @db.VarChar(500)
+  githubUrl   String?       @map("github_url") @db.VarChar(500)
+  status      ProjectStatus @default(PUBLISHED)
+  featured    Boolean       @default(false)
+  order       Int           @default(0)
+  startDate   DateTime?     @map("start_date") @db.Date
+  endDate     DateTime?     @map("end_date") @db.Date
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+// ============================================================
+// SOCIAL LINK - GitHub, LinkedIn, Instagram, etc.
+// ============================================================
+model SocialLink {
+  id        Int      @id @default(autoincrement())
+  platform  String   @db.VarChar(100)
+  label     String   @db.VarChar(100)
+  url       String   @db.VarChar(500)
+  icon      String?  @db.VarChar(100)
+  order     Int      @default(0)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("social_links")
+}
+
+// ============================================================
+// CONTACT MESSAGE - Messages from visitors
+// ============================================================
+model ContactMessage {
+  id        Int                  @id @default(autoincrement())
+  name      String               @db.VarChar(255)
+  email     String               @db.VarChar(255)
+  subject   String?              @db.VarChar(500)
+  message   String               @db.Text
+  status    ContactMessageStatus @default(UNREAD)
+  ipAddress String?              @map("ip_address") @db.VarChar(45)
+  createdAt DateTime             @default(now()) @map("created_at")
+  updatedAt DateTime             @updatedAt @map("updated_at")
+
+  @@map("contact_messages")
+}
+
+enum ContactMessageStatus {
+  UNREAD
+  READ
+  REPLIED
+  ARCHIVED
+}
+
+// ============================================================
+// SITE SETTINGS - Global website configuration
+// ============================================================
+model SiteSetting {
+  id          Int         @id @default(autoincrement())
+  key         String      @unique @db.VarChar(100)
+  value       String?     @db.LongText
+  type        SettingType @default(STRING)
+  label       String      @db.VarChar(255)
+  description String?     @db.VarChar(500)
+  group       String      @default("general") @db.VarChar(100)
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  @@map("site_settings")
+}
+
+enum SettingType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+  TEXT
+  IMAGE
+}
