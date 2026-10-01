@@ -7,14 +7,14 @@ import { useState, type ReactNode } from "react";
 
 const navigation = [
   { label: "Dashboard", href: "/admin", slug: "dashboard" },
-  { label: "Profile", href: "/admin?view=profile", slug: "profile" },
-  { label: "Education", href: "/admin?view=education", slug: "education" },
-  { label: "Career", href: "/admin?view=career", slug: "career" },
-  { label: "Skills", href: "/admin?view=skills", slug: "skills" },
-  { label: "Projects", href: "/admin?view=projects", slug: "projects" },
-  { label: "Social Links", href: "/admin?view=social-links", slug: "social-links" },
-  { label: "Messages", href: "/admin?view=messages", slug: "messages" },
-  { label: "Settings", href: "/admin?view=settings", slug: "settings" },
+  { label: "Profile", href: "/admin/profile", slug: "profile" },
+  { label: "Education", href: "/admin/education", slug: "education" },
+  { label: "Career", href: "/admin/career", slug: "career" },
+  { label: "Skills", href: "/admin/skills", slug: "skills" },
+  { label: "Projects", href: "/admin/projects", slug: "projects" },
+  { label: "Social Links", href: "/admin/social-links", slug: "social-links" },
+  { label: "Messages", href: "/admin/messages", slug: "messages" },
+  { label: "Settings", href: "/admin/settings", slug: "settings" },
 ];
 
 export function AdminShell({
@@ -31,6 +31,17 @@ export function AdminShell({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const currentView = searchParams.get("view") ?? "dashboard";
+  const activeNavigation = navigation.find((item) => {
+    if (item.slug === "dashboard") {
+      return pathname === "/admin" && currentView === "dashboard";
+    }
+
+    if (item.href.includes("?")) {
+      return pathname === "/admin" && currentView === item.slug;
+    }
+
+    return pathname === item.href;
+  });
 
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
@@ -53,11 +64,7 @@ export function AdminShell({
 
             <nav className="flex-1 space-y-2 px-4 pb-6">
               {navigation.map((item) => {
-                const isActive =
-                  pathname === item.href.split("?")[0] &&
-                  (item.slug === "dashboard"
-                    ? currentView === "dashboard"
-                    : currentView === item.slug);
+                const isActive = activeNavigation?.slug === item.slug;
 
                 return (
                   <Link
@@ -103,9 +110,9 @@ export function AdminShell({
 
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-400">
-                    Overview
+                    Admin workspace
                   </p>
-                  <h2 className="text-lg font-semibold text-slate-900">Dashboard</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">{activeNavigation?.label ?? "Dashboard"}</h2>
                 </div>
               </div>
 

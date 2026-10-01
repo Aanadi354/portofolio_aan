@@ -11,6 +11,30 @@ export type PublicPortfolioData = {
     profileImage: string | null;
     resumeUrl: string | null;
   } | null;
+  careers: Array<{
+    id: number;
+    company: string;
+    position: string;
+    type: string;
+    startDate: Date;
+    endDate: Date | null;
+    isCurrent: boolean;
+    location: string | null;
+    description: string | null;
+    logoUrl: string | null;
+  }>;
+  education: Array<{
+    id: number;
+    institution: string;
+    degree: string;
+    fieldOfStudy: string;
+    startDate: Date;
+    endDate: Date | null;
+    isCurrent: boolean;
+    gpa: string | null;
+    description: string | null;
+    logoUrl: string | null;
+  }>;
   projects: Array<{
     id: number;
     title: string;
@@ -46,9 +70,15 @@ export type PublicPortfolioData = {
 };
 
 export async function getPublicPortfolioData(): Promise<PublicPortfolioData> {
-  const [profile, projects, skillCategories, socialLinks, settings] = await Promise.all([
+  const [profile, careers, education, projects, skillCategories, socialLinks, settings] = await Promise.all([
     prisma.profile.findFirst({
       orderBy: { id: "asc" },
+    }),
+    prisma.career.findMany({
+      orderBy: [{ order: "asc" }, { startDate: "desc" }, { id: "desc" }],
+    }),
+    prisma.education.findMany({
+      orderBy: [{ order: "asc" }, { startDate: "desc" }, { id: "desc" }],
     }),
     prisma.project.findMany({
       where: { status: "PUBLISHED" },
@@ -90,6 +120,30 @@ export async function getPublicPortfolioData(): Promise<PublicPortfolioData> {
           resumeUrl: profile.resumeUrl,
         }
       : null,
+    careers: careers.map((career) => ({
+      id: career.id,
+      company: career.company,
+      position: career.position,
+      type: career.type,
+      startDate: career.startDate,
+      endDate: career.endDate,
+      isCurrent: career.isCurrent,
+      location: career.location,
+      description: career.description,
+      logoUrl: career.logoUrl,
+    })),
+    education: education.map((item) => ({
+      id: item.id,
+      institution: item.institution,
+      degree: item.degree,
+      fieldOfStudy: item.fieldOfStudy,
+      startDate: item.startDate,
+      endDate: item.endDate,
+      isCurrent: item.isCurrent,
+      gpa: item.gpa?.toString() ?? null,
+      description: item.description,
+      logoUrl: item.logoUrl,
+    })),
     projects: projects.map((project) => ({
       id: project.id,
       title: project.title,
